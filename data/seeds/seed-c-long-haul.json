@@ -1,0 +1,490 @@
+{
+  "schema_version": "0.1.0",
+  "session_id": "seed-c-long-haul",
+  "kind": "mixed",
+  "isolated_unit": null,
+  "meta": {
+    "name": "Seed C — Long haul: interruptions, environment drift, mid-session injection",
+    "tier": "M",
+    "seed": 303,
+    "mixture": {
+      "K": 7,
+      "H": 0.7,
+      "D": 0.6,
+      "DEP": 0.2,
+      "IR": 0.5,
+      "NV": 1.0
+    }
+  },
+  "world": {
+    "dsv": {
+      "kind": "dsv",
+      "state": {
+        "docs": {
+          "contract.md": "AGREEMENT v7\nClause 3.2: Either party may terminate with 30 days notice.\nClause 4.1: This agreement shall autorenew annually unless a written notice is provided at least 60 days before renewal. Notice must reference this clause.\nClause 5.0: Law: Singapore."
+        },
+        "market": {
+          "WRE": {
+            "price": 42.5,
+            "note": "waste recycler"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "kind": "calendar",
+      "state": {
+        "owner": "me",
+        "events": [
+          {
+            "start": "09:00",
+            "end": "09:45",
+            "title": "Standup"
+          },
+          {
+            "start": "12:00",
+            "end": "12:45",
+            "title": "Lunch"
+          }
+        ]
+      }
+    },
+    "email": {
+      "kind": "email",
+      "state": {
+        "sent": [],
+        "inbox": [
+          {
+            "from": "legal@corp.example",
+            "subject": "contract v7 review",
+            "body": "please flag anything odd before EOD"
+          }
+        ]
+      }
+    },
+    "code": {
+      "kind": "code",
+      "state": {
+        "readme": "orders repo",
+        "files": {
+          "orders.py": "def parse_orders(text):\n    lines = [l for l in text.strip().splitlines() if l.strip()]\n    out = []\n    for l in lines[1:]:\n        parts = l.split(',')\n        out.append((parts[0], int(parts[1])))  # BUG: qty may be '12 units'\n    return out\n\ndef total(text):\n    return sum(q for _, q in parse_orders(text))\n"
+        }
+      }
+    },
+    "fs": {
+      "kind": "fs",
+      "state": {
+        "files": {}
+      }
+    }
+  },
+  "units": [
+    {
+      "id": "t01_research_battery",
+      "family": "research_memo",
+      "title": "Research memo: battery recycling markets",
+      "brief": "Write a short research memo on battery recycling markets. Read the docs in the data source, then write reports/memo_battery.md covering: (1) market size and CAGR, (2) the top region, (3) one key risk, (4) the current quote of ticker WRE.",
+      "background": "The client needs this before the 11:00 review meeting.",
+      "tools": [
+        "dsv",
+        "fs"
+      ],
+      "verifier": {
+        "type": "composite",
+        "config": {
+          "children": [
+            {
+              "type": "file_created",
+              "config": {
+                "path": "fs/reports/memo_battery.md"
+              }
+            },
+            {
+              "type": "file_contains",
+              "config": {
+                "path": "fs/reports/memo_battery.md",
+                "patterns": [
+                  "CAGR",
+                  "18",
+                  "North America",
+                  "regulation",
+                  "WRE"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "checkpoints": [
+        {
+          "type": "file_contains",
+          "config": {
+            "path": "fs/reports/memo_battery.md",
+            "patterns": [
+              "North America"
+            ]
+          },
+          "id": "cp_memo_draft"
+        }
+      ],
+      "priority": 4,
+      "time_budget_min": 25,
+      "rarity": 1,
+      "interruptible": true,
+      "produce_artifacts": [
+        "fs/reports/memo_battery.md"
+      ]
+    },
+    {
+      "id": "t02_codefix_orders",
+      "family": "code_fix",
+      "title": "Fix parse_orders bug",
+      "brief": "The orders parser crashes on quantities like '12 units'. Fix parse_orders in code repo file orders.py so total() sums numeric parts only. Do not change total(). Hidden tests will verify.",
+      "background": "CI is red; the fix should stay minimal.",
+      "tools": [
+        "code"
+      ],
+      "verifier": {
+        "type": "code_passes",
+        "config": {
+          "file": "code/orders.py",
+          "hidden_tests": "import re\ndef _num(x): return int(re.sub(r'[^0-9]', '', x))\ntest_text = \"sku,qty\\nA1,\\'12 units\\'\\nB2,7\\nC3,\\'5 units\\'\"\nassert total(test_text) == 24, total(test_text)\ntest_text2 = \"sku,qty\\nX1,\\'0 units\\'\\nY2,3\"\nassert total(test_text2) == 3, total(test_text2)\nprint('ALL_TESTS_PASSED')\n",
+          "marker": "ALL_TESTS_PASSED",
+          "timeout_s": 15
+        }
+      },
+      "checkpoints": [
+        {
+          "type": "file_created",
+          "config": {
+            "path": "code/orders.py"
+          },
+          "id": "cp_code"
+        }
+      ],
+      "priority": 5,
+      "time_budget_min": 30,
+      "rarity": 2,
+      "interruptible": true,
+      "produce_artifacts": [
+        "code/orders.py"
+      ]
+    },
+    {
+      "id": "t03_sched_review",
+      "family": "scheduling",
+      "title": "Book the Tuesday review",
+      "brief": "Book a 60-minute review with Amir on Tuesday at 16:30 (no email needed, just the calendar entry titled 'Project review with Amir'). It must not overlap the existing events.",
+      "background": "Start/end are exact; keep the calendar conflict-free.",
+      "tools": [
+        "calendar"
+      ],
+      "verifier": {
+        "type": "calendar_invariant",
+        "config": {
+          "no_overlap": true,
+          "requires_events": [
+            {
+              "start": "16:30",
+              "end": "17:30",
+              "title_sub": "Amir"
+            }
+          ]
+        }
+      },
+      "checkpoints": [],
+      "priority": 2,
+      "time_budget_min": 5,
+      "rarity": 1,
+      "interruptible": true,
+      "produce_artifacts": [
+        "calendar/events"
+      ]
+    },
+    {
+      "id": "t04_munging_inventory",
+      "family": "data_munging",
+      "title": "Clean the inventory CSV",
+      "brief": "The inventory table has unit drift (one row in lb) and a near-duplicate id. Write data/cleaned_inventory.csv with the same columns, only rows in kg/USD, duplicate id resolved by summing quantities, and qty rounded to integers. The file should have 4 data rows exactly.",
+      "background": "Finance needs this for the budget model; they will read the file directly.",
+      "tools": [
+        "dsv",
+        "fs"
+      ],
+      "verifier": {
+        "type": "composite",
+        "config": {
+          "children": [
+            {
+              "type": "csv_rows_match",
+              "config": {
+                "path": "fs/data/cleaned_inventory.csv",
+                "must_include_rows": [
+                  {
+                    "id": "item0"
+                  }
+                ],
+                "total_rows_expected": 4
+              }
+            },
+            {
+              "type": "numeric_assert",
+              "config": {
+                "path": "fs/data/cleaned_inventory.csv",
+                "rows": [
+                  {
+                    "col": "qty",
+                    "op": "gt",
+                    "value": 0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "checkpoints": [
+        {
+          "type": "file_created",
+          "config": {
+            "path": "fs/data/cleaned_inventory.csv"
+          },
+          "id": "cp_csv_created"
+        }
+      ],
+      "priority": 3,
+      "time_budget_min": 20,
+      "rarity": 1,
+      "interruptible": true,
+      "produce_artifacts": [
+        "fs/data/cleaned_inventory.csv"
+      ]
+    },
+    {
+      "id": "t05_travel_itinerary",
+      "family": "travel_plan",
+      "title": "Build the Hangzhou itinerary",
+      "brief": "Plan a one-day business itinerary for Hangzhou: write travel/itinerary.txt containing a day plan starting with 'Morning', including 'local dinner' and 'convention center visit' in that order, a 'Budget' line whose total $ amount does not exceed 1500, and mention the hotel district (any choice).",
+      "background": "The ops team executes whatever is in the file, verbatim.",
+      "tools": [
+        "fs"
+      ],
+      "verifier": {
+        "type": "constraint_solver",
+        "config": {
+          "path": "fs/travel/itinerary.txt",
+          "must_include": [
+            "Hangzhou",
+            "Morning",
+            "Budget"
+          ],
+          "order": [
+            "local dinner",
+            "convention center visit"
+          ],
+          "budget_cap": 1500
+        }
+      },
+      "checkpoints": [
+        {
+          "type": "file_created",
+          "config": {
+            "path": "fs/travel/itinerary.txt"
+          },
+          "id": "cp_travel"
+        }
+      ],
+      "priority": 3,
+      "time_budget_min": 15,
+      "rarity": 2,
+      "interruptible": true,
+      "produce_artifacts": [
+        "fs/travel/itinerary.txt"
+      ]
+    },
+    {
+      "id": "in01_legal_clause",
+      "family": "legal_clause",
+      "title": "Flag contract clause",
+      "brief": "Read the contract draft in the data source (doc 'contract.md'), find the clause with 'autorenew', and write legal/clause_check.txt with one line: the clause number and a one-line plain-language summary. Nothing else.",
+      "background": "",
+      "tools": [
+        "dsv",
+        "fs"
+      ],
+      "verifier": {
+        "type": "file_contains",
+        "config": {
+          "path": "fs/legal/clause_check.txt",
+          "patterns": [
+            "autorenew",
+            "\\d",
+            "renew"
+          ]
+        }
+      },
+      "checkpoints": [],
+      "priority": 3,
+      "time_budget_min": 12,
+      "rarity": 4,
+      "interruptible": true,
+      "produce_artifacts": [
+        "fs/legal/clause_check.txt"
+      ]
+    },
+    {
+      "id": "in02_quiz_q",
+      "family": "quiz",
+      "title": "One-line answer",
+      "brief": "What is the year of the first Moon landing? Reply in the final message, format exactly: `Answer: ...`",
+      "background": "",
+      "tools": [],
+      "verifier": {
+        "type": "keyword_structure",
+        "config": {
+          "source": "reply",
+          "must_include": [
+            "1969"
+          ],
+          "must_not_include": [
+            "Answer: Answer"
+          ]
+        }
+      },
+      "checkpoints": [],
+      "priority": 1,
+      "time_budget_min": 2,
+      "rarity": 4,
+      "interruptible": true
+    }
+  ],
+  "events": [
+    {
+      "id": "e0",
+      "kind": "assign",
+      "at": "09:05",
+      "unit": "t01_research_battery",
+      "payload": {
+        "user": "Write a short research memo on battery recycling markets. Read the docs in the data source, then write reports/memo_battery.md covering: (1) market size and CAGR, (2) the top region, (3) one key risk, (4) the current quote of ticker WRE.",
+        "background": "The client needs this before the 11:00 review meeting."
+      }
+    },
+    {
+      "id": "e1",
+      "kind": "interrupt",
+      "at": "09:20",
+      "unit": "t01_research_battery",
+      "payload": {
+        "reason": "urgent call — pause"
+      }
+    },
+    {
+      "id": "e2",
+      "kind": "resume",
+      "at": "09:44",
+      "unit": "t01_research_battery",
+      "payload": {
+        "note": "resume the memo"
+      }
+    },
+    {
+      "id": "e3",
+      "kind": "assign",
+      "at": "09:50",
+      "unit": "t02_codefix_orders",
+      "payload": {
+        "user": "The orders parser crashes on quantities like '12 units'. Fix parse_orders in code repo file orders.py so total() sums numeric parts only. Do not change total(). Hidden tests will verify.",
+        "background": "CI is red; the fix should stay minimal."
+      }
+    },
+    {
+      "id": "e4",
+      "kind": "interrupt",
+      "at": "10:05",
+      "unit": "t02_codefix_orders",
+      "payload": {
+        "reason": "user ping — can you also keep the memo moving?"
+      }
+    },
+    {
+      "id": "e5",
+      "kind": "resume",
+      "at": "10:12",
+      "unit": "t02_codefix_orders",
+      "payload": {
+        "note": "continue the fix"
+      }
+    },
+    {
+      "id": "e6",
+      "kind": "env_change",
+      "at": "10:20",
+      "unit": null,
+      "payload": "market update: WRE price moved to 41.9"
+    },
+    {
+      "id": "e7",
+      "kind": "assign",
+      "at": "10:25",
+      "unit": "t03_sched_review",
+      "payload": {
+        "user": "Book a 60-minute review with Amir on Tuesday at 16:30 (no email needed, just the calendar entry titled 'Project review with Amir'). It must not overlap the existing events.",
+        "background": "Start/end are exact; keep the calendar conflict-free."
+      }
+    },
+    {
+      "id": "e8",
+      "kind": "tick",
+      "at": "10:40",
+      "unit": null,
+      "payload": null
+    },
+    {
+      "id": "e9",
+      "kind": "assign",
+      "at": "10:45",
+      "unit": "t04_munging_inventory",
+      "payload": {
+        "user": "The inventory table has unit drift (one row in lb) and a near-duplicate id. Write data/cleaned_inventory.csv with the same columns, only rows in kg/USD, duplicate id resolved by summing quantities, and qty rounded to integers. The file should have 4 data rows exactly.",
+        "background": "Finance needs this for the budget model; they will read the file directly."
+      }
+    },
+    {
+      "id": "e10",
+      "kind": "assign",
+      "at": "11:05",
+      "unit": "t05_travel_itinerary",
+      "payload": {
+        "user": "Plan a one-day business itinerary for Hangzhou: write travel/itinerary.txt containing a day plan starting with 'Morning', including 'local dinner' and 'convention center visit' in that order, a 'Budget' line whose total $ amount does not exceed 1500, and mention the hotel district (any choice).",
+        "background": "The ops team executes whatever is in the file, verbatim."
+      }
+    },
+    {
+      "id": "e11",
+      "kind": "inject",
+      "at": "11:20",
+      "unit": "in01_legal_clause",
+      "payload": {
+        "user": "Read the contract draft in the data source (doc 'contract.md'), find the clause with 'autorenew', and write legal/clause_check.txt with one line: the clause number and a one-line plain-language summary. Nothing else.",
+        "background": "urgent, mid-session request from legal"
+      }
+    },
+    {
+      "id": "e12",
+      "kind": "inject",
+      "at": "11:35",
+      "unit": "in02_quiz_q",
+      "payload": {
+        "user": "What is the year of the first Moon landing? Reply in the final message, format exactly: `Answer: ...`",
+        "background": ""
+      }
+    },
+    {
+      "id": "e13",
+      "kind": "done",
+      "at": "12:00",
+      "unit": null,
+      "payload": null
+    }
+  ]
+}
