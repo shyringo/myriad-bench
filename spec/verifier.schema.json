@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myriad-bench.dev/spec/verifier.schema.json",
+  "title": "MyriadBench Verifier",
+  "description": "Typed verifier config. Deterministic by default; llm_judge is opt-in.",
+  "type": "object",
+  "required": ["type", "config"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "file_created",
+        "file_contains",
+        "json_path_equals",
+        "numeric_assert",
+        "csv_rows_match",
+        "calendar_invariant",
+        "email_checks",
+        "code_passes",
+        "constraint_solver",
+        "keyword_structure",
+        "state_web",
+        "composite",
+        "llm_judge"
+      ]
+    },
+    "config": {
+      "type": "object",
+      "description": "Type-specific config. See harness/verifiers.py for canonical fields of each type.",
+      "additionalProperties": true
+    },
+    "weight": { "type": "number", "minimum": 0, "maximum": 1, "default": 1 },
+    "id": { "type": "string", "description": "Optional id, for checkpoint sub-verifiers." }
+  }
+}
