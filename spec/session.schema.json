@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myriad-bench.dev/spec/session.schema.json",
+  "title": "MyriadBench Session",
+  "description": "One agent + one event stream + one persistent world state. See docs/design.md.",
+  "type": "object",
+  "required": ["schema_version", "session_id", "meta", "world", "units", "events"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "session_id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "kind": { "enum": ["mixed", "isolated"], "default": "mixed" },
+    "isolated_unit": { "type": ["string", "null"], "description": "unit id when kind=isolated" },
+    "meta": {
+      "type": "object",
+      "required": ["name", "tier", "mixture"],
+      "properties": {
+        "name": { "type": "string" },
+        "tier": { "enum": ["S", "M", "L"] },
+        "seed": { "type": "integer" },
+        "mixture": {
+          "type": "object",
+          "description": "MixtureConfig treatment (K, H, D, DEP, IR, NV are 0..1 or counts).",
+          "required": ["K", "H", "D", "DEP", "IR", "NV"],
+          "properties": {
+            "K": { "type": "integer", "minimum": 1 },
+            "H": { "type": "number", "minimum": 0, "maximum": 1 },
+            "D": { "type": "number", "minimum": 0, "maximum": 1 },
+            "DEP": { "type": "number", "minimum": 0, "maximum": 1 },
+            "IR": { "type": "number", "minimum": 0, "maximum": 1 },
+            "NV": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    },
+    "world": {
+      "type": "object",
+      "description": "Initial persistent world state. Env containers keyed by env id.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "enum": ["fs", "calendar", "email", "dsv", "code"] },
+          "state": { "type": "object" }
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "items": { "$ref": "task-unit.schema.json" },
+      "minItems": 1
+    },
+    "events": {
+      "type": "array",
+      "description": "Chronological event stream. see events.md in docs.",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "at"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["assign", "user_message", "interrupt", "resume", "inject", "env_change", "tick", "done"]
+          },
+          "at": { "type": "string", "description": "simulated timestamp, ISO-8601" },
+          "unit": { "type": ["string", "null"] },
+          "payload": { "type": ["object", "string", "null"] }
+        }
+      }
+    }
+  }
+}

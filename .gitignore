@@ -1,0 +1,27 @@
+# python
+__pycache__/
+*.pyc
+*.pyo
+
+# results & generated data (regenerable via CLI)
+data/generated/
+data/results/
+
+# env / secrets
+.env
+*.key
+
+# os
+.DS_Store
+Thumbs.db
+
+# editors
+.vscode/
+.idea/
+# pilot artifacts (regenerable; includes synthetic demo data — never publish)
+data/pilot/
+data/pilot-demo/
+data/pilot-demo-echo/
+data/pilot-stale/
+data/pilot-legacy/
+data/pilot-release-assets/

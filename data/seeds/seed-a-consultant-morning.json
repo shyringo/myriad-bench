@@ -1,0 +1,379 @@
+{
+  "schema_version": "0.1.0",
+  "session_id": "seed-a-consultant-morning",
+  "kind": "mixed",
+  "isolated_unit": null,
+  "meta": {
+    "name": "Seed A — A consultant's morning (lightly interleaved)",
+    "tier": "S",
+    "seed": 101,
+    "mixture": {
+      "K": 5,
+      "H": 0.35,
+      "D": 0.4,
+      "DEP": 0.0,
+      "IR": 0.4,
+      "NV": 0.0
+    }
+  },
+  "world": {
+    "dsv": {
+      "kind": "dsv",
+      "state": {
+        "docs": {
+          "battery-recycling-markets.md": "notes on battery recycling markets:\n- 2025 global size ~ 18B USD\n- CAGR ~ 12%\n- top region: North America\n- key constraint: regulation lag",
+          "context.md": "client asks: quantify market, name top region, give one risk.\n- risk: regulation lag\n- target: chilled, factual memo"
+        },
+        "market": {
+          "WRE": {
+            "price": 42.5,
+            "note": "waste recycler"
+          },
+          "EVB": {
+            "price": 7.2,
+            "note": "battery pack maker"
+          }
+        }
+      }
+    },
+    "calendar": {
+      "kind": "calendar",
+      "state": {
+        "owner": "me",
+        "events": [
+          {
+            "start": "09:00",
+            "end": "09:45",
+            "title": "Standup"
+          },
+          {
+            "start": "13:00",
+            "end": "13:30",
+            "title": "Lunch"
+          }
+        ]
+      }
+    },
+    "email": {
+      "kind": "email",
+      "state": {
+        "sent": [],
+        "inbox": [
+          {
+            "from": "ops@corp.example",
+            "subject": "CI failing",
+            "body": "build 42 red on orders parser"
+          }
+        ]
+      }
+    },
+    "code": {
+      "kind": "code",
+      "state": {
+        "readme": "tiny orders repo",
+        "files": {
+          "orders.py": "def parse_orders(text):\n    lines = [l for l in text.strip().splitlines() if l.strip()]\n    out = []\n    for l in lines[1:]:\n        parts = l.split(',')\n        out.append((parts[0], int(parts[1])))  # BUG: qty may be '12 units'\n    return out\n\ndef total(text):\n    return sum(q for _, q in parse_orders(text))\n"
+        }
+      }
+    },
+    "fs": {
+      "kind": "fs",
+      "state": {
+        "files": {}
+      }
+    }
+  },
+  "units": [
+    {
+      "id": "t01_research_battery",
+      "family": "research_memo",
+      "title": "Research memo: battery recycling markets",
+      "brief": "Write a short research memo on battery recycling markets. Read the docs in the data source, then write reports/memo_battery.md covering: (1) market size and CAGR, (2) the top region, (3) one key risk, (4) the current quote of ticker WRE.",
+      "background": "The client needs this before the 11:00 review meeting.",
+      "tools": [
+        "dsv",
+        "fs"
+      ],
+      "verifier": {
+        "type": "composite",
+        "config": {
+          "children": [
+            {
+              "type": "file_created",
+              "config": {
+                "path": "fs/reports/memo_battery.md"
+              }
+            },
+            {
+              "type": "file_contains",
+              "config": {
+                "path": "fs/reports/memo_battery.md",
+                "patterns": [
+                  "CAGR",
+                  "18",
+                  "North America",
+                  "regulation",
+                  "WRE"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "checkpoints": [
+        {
+          "type": "file_created",
+          "config": {
+            "path": "fs/reports/memo_battery.md"
+          },
+          "id": "cp_memo_created"
+        },
+        {
+          "type": "file_contains",
+          "config": {
+            "path": "fs/reports/memo_battery.md",
+            "patterns": [
+              "18",
+              "North America"
+            ]
+          },
+          "id": "cp_memo_draft"
+        }
+      ],
+      "priority": 4,
+      "time_budget_min": 25,
+      "rarity": 1,
+      "interruptible": true,
+      "produce_artifacts": [
+        "fs/reports/memo_battery.md"
+      ]
+    },
+    {
+      "id": "t02_sched_review",
+      "family": "scheduling",
+      "title": "Book the Monday review",
+      "brief": "Book a 60-minute review with Lea on Monday at 14:00 (no email needed, just the calendar entry titled 'Project review with Lea'). It must not overlap the existing events.",
+      "background": "Start/end are exact; keep the calendar conflict-free.",
+      "tools": [
+        "calendar"
+      ],
+      "verifier": {
+        "type": "calendar_invariant",
+        "config": {
+          "no_overlap": true,
+          "requires_events": [
+            {
+              "start": "14:00",
+              "end": "15:00",
+              "title_sub": "Lea"
+            }
+          ]
+        }
+      },
+      "checkpoints": [],
+      "priority": 2,
+      "time_budget_min": 5,
+      "rarity": 1,
+      "interruptible": true,
+      "produce_artifacts": [
+        "calendar/events"
+      ]
+    },
+    {
+      "id": "t03_codefix_orders",
+      "family": "code_fix",
+      "title": "Fix parse_orders bug",
+      "brief": "The orders parser crashes on quantities like '12 units'. Fix parse_orders in code repo file orders.py so total() sums numeric parts only. Do not change total(). Hidden tests will verify.",
+      "background": "CI is red; the fix should stay minimal.",
+      "tools": [
+        "code"
+      ],
+      "verifier": {
+        "type": "code_passes",
+        "config": {
+          "file": "code/orders.py",
+          "hidden_tests": "import re\ndef _num(x): return int(re.sub(r'[^0-9]', '', x))\ntest_text = \"sku,qty\\nA1,\\'12 units\\'\\nB2,7\\nC3,\\'5 units\\'\"\nassert total(test_text) == 24, total(test_text)\ntest_text2 = \"sku,qty\\nX1,\\'0 units\\'\\nY2,3\"\nassert total(test_text2) == 3, total(test_text2)\nprint('ALL_TESTS_PASSED')\n",
+          "marker": "ALL_TESTS_PASSED",
+          "timeout_s": 15
+        }
+      },
+      "checkpoints": [
+        {
+          "type": "file_created",
+          "config": {
+            "path": "code/orders.py"
+          },
+          "id": "cp_code"
+        }
+      ],
+      "priority": 5,
+      "time_budget_min": 30,
+      "rarity": 2,
+      "interruptible": true,
+      "produce_artifacts": [
+        "code/orders.py"
+      ]
+    },
+    {
+      "id": "t04_math_profit",
+      "family": "math_word",
+      "title": "Profit math",
+      "brief": "Each unit sells at 88 CNY net; we ship 4 units per day; fixed overhead is 3 x 10 CNY per day. Reply with the daily net profit as a single number (do the arithmetic, answer in your final reply as 'Answer: <number>').",
+      "background": "",
+      "tools": [],
+      "verifier": {
+        "type": "numeric_assert",
+        "config": {
+          "source": "reply",
+          "rows": [
+            {
+              "op": "eq",
+              "value": 382,
+              "tol": 0.5
+            }
+          ]
+        }
+      },
+      "checkpoints": [],
+      "priority": 1,
+      "time_budget_min": 4,
+      "rarity": 1,
+      "interruptible": true
+    },
+    {
+      "id": "t05_comms_update",
+      "family": "comms",
+      "title": "Email Jonas",
+      "brief": "Send an email to jonas@corp.example updating them on the inventory file. Subject must contain 'update'. Body: one-paragraph summary, mention the deliverable, and attach cleaned_inventory.csv. Keep tone professional and under 120 words.",
+      "background": "They are waiting on this before their standup.",
+      "tools": [
+        "email"
+      ],
+      "verifier": {
+        "type": "email_checks",
+        "config": {
+          "requires": [
+            {
+              "to": "jonas@corp.example",
+              "subject_sub": "update",
+              "body_sub": "deliverable",
+              "attach_sub": "cleaned_inventory.csv"
+            }
+          ]
+        }
+      },
+      "checkpoints": [],
+      "priority": 2,
+      "time_budget_min": 10,
+      "rarity": 1,
+      "interruptible": true,
+      "produce_artifacts": [
+        "email/sent"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "e0",
+      "kind": "assign",
+      "at": "09:05",
+      "unit": "t01_research_battery",
+      "payload": {
+        "user": "Write a short research memo on battery recycling markets. Read the docs in the data source, then write reports/memo_battery.md covering: (1) market size and CAGR, (2) the top region, (3) one key risk, (4) the current quote of ticker WRE.",
+        "background": "The client needs this before the 11:00 review meeting."
+      }
+    },
+    {
+      "id": "e1",
+      "kind": "assign",
+      "at": "09:18",
+      "unit": "t02_sched_review",
+      "payload": {
+        "user": "Book a 60-minute review with Lea on Monday at 14:00 (no email needed, just the calendar entry titled 'Project review with Lea'). It must not overlap the existing events.",
+        "background": "Start/end are exact; keep the calendar conflict-free."
+      }
+    },
+    {
+      "id": "e2",
+      "kind": "interrupt",
+      "at": "09:24",
+      "unit": "t01_research_battery",
+      "payload": {
+        "reason": "user ping — where are you on the memo?"
+      }
+    },
+    {
+      "id": "e3",
+      "kind": "resume",
+      "at": "09:26",
+      "unit": "t01_research_battery",
+      "payload": {
+        "note": "continue where you left off; the client meeting is at 11:00"
+      }
+    },
+    {
+      "id": "e4",
+      "kind": "assign",
+      "at": "09:40",
+      "unit": "t03_codefix_orders",
+      "payload": {
+        "user": "The orders parser crashes on quantities like '12 units'. Fix parse_orders in code repo file orders.py so total() sums numeric parts only. Do not change total(). Hidden tests will verify.",
+        "background": "CI is red; the fix should stay minimal."
+      }
+    },
+    {
+      "id": "e5",
+      "kind": "interrupt",
+      "at": "09:52",
+      "unit": "t03_codefix_orders",
+      "payload": {
+        "reason": "ops moved the deploy window to 4pm — adjust if relevant"
+      }
+    },
+    {
+      "id": "e6",
+      "kind": "resume",
+      "at": "09:55",
+      "unit": "t03_codefix_orders",
+      "payload": {
+        "note": "continue the fix"
+      }
+    },
+    {
+      "id": "e7",
+      "kind": "user_message",
+      "at": "10:05",
+      "unit": null,
+      "payload": {
+        "user": "coffee's ready; also, keep me posted if anything looks off."
+      }
+    },
+    {
+      "id": "e8",
+      "kind": "assign",
+      "at": "10:15",
+      "unit": "t04_math_profit",
+      "payload": {
+        "user": "Each unit sells at 88 CNY net; we ship 4 units per day; fixed overhead is 3 x 10 CNY per day. Reply with the daily net profit as a single number (do the arithmetic, answer in your final reply as 'Answer: <number>').",
+        "background": ""
+      }
+    },
+    {
+      "id": "e9",
+      "kind": "assign",
+      "at": "10:30",
+      "unit": "t05_comms_update",
+      "payload": {
+        "user": "Send an email to jonas@corp.example updating them on the inventory file. Subject must contain 'update'. Body: one-paragraph summary, mention the deliverable, and attach cleaned_inventory.csv. Keep tone professional and under 120 words.",
+        "background": "They are waiting on this before their standup."
+      }
+    },
+    {
+      "id": "e10",
+      "kind": "done",
+      "at": "11:00",
+      "unit": null,
+      "payload": null
+    }
+  ]
+}
