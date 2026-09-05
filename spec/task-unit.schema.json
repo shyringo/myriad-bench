@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myriad-bench.dev/spec/task-unit.schema.json",
+  "title": "MyriadBench Task Unit",
+  "description": "Smallest verifiable unit of work. Belongs to an open family registry.",
+  "type": "object",
+  "required": ["id", "family", "title", "brief", "tools", "verifier", "priority", "time_budget_min"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
+    "family": { "type": "string", "description": "Family id from the open registry, e.g. research_memo" },
+    "title": { "type": "string" },
+    "brief": { "type": "string", "description": "User-facing task description (what the user says/asks)." },
+    "background": { "type": "string", "description": "Context injected with the assignment (world hints)." },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["fs", "calendar", "email", "dsv", "code", "none"]
+      }
+    },
+    "verifier": { "$ref": "verifier.schema.json" },
+    "priority": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "time_budget_min": { "type": "integer", "description": "Simulated minutes allotted for the unit." },
+    "depends_on": {
+      "type": "array",
+      "description": "State-web obligations: this unit consumes artifacts produced by others.",
+      "items": {
+        "type": "object",
+        "required": ["unit", "artifact"],
+        "properties": {
+          "unit": { "type": "string" },
+          "artifact": { "type": "string", "description": "Path/key of the consumed artifact." }
+        }
+      }
+    },
+    "rarity": { "type": "integer", "minimum": 1, "maximum": 4, "description": "Long-tail novelty tier 1=head..4=rare." },
+    "interruptible": { "type": "boolean", "default": true },
+    "checkpoints": {
+      "type": "array",
+      "description": "Sub-verifier objects for mid-task milestones (used by Switch Cost probes).",
+      "items": { "$ref": "verifier.schema.json" }
+    }
+  }
+}

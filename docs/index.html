@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="MyriadBench — One model. One session. All tasks. The benchmark for the day in the life of one AI.">
+<title>MyriadBench — One model. One session. All tasks.</title>
+<style>
+  :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e; --purple:#a371f7; --pink:#f778ba; --cyan:#39c5cf; --green:#3fb950; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; line-height:1.6; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 24px; }
+  header { text-align:center; padding:72px 0 32px; }
+  header h1 { font-size:56px; letter-spacing:-1px; }
+  header p { color:var(--muted); font-size:20px; margin-top:12px; }
+  header .tag { color:var(--fg); font-size:22px; margin-top:6px; }
+  .hook { text-align:center; color:var(--muted); font-size:16px; max-width:760px; margin:20px auto 0; }
+  .stats { display:flex; justify-content:center; gap:28px; flex-wrap:wrap; margin:40px 0 8px; }
+  .stat { background:#161b22; border:1px solid #21262d; border-radius:14px; padding:22px 30px; min-width:190px; }
+  .stat .n { font-size:40px; font-weight:700; color:var(--purple); }
+  .stat .l { color:var(--muted); font-size:13px; margin-top:4px; }
+  section { margin:56px 0; }
+  h2 { font-size:24px; margin-bottom:16px; }
+  h2 .dot { color:var(--purple); }
+  table { width:100%; border-collapse:collapse; font-size:15px; }
+  th, td { padding:10px 12px; text-align:left; border-bottom:1px solid #21262d; }
+  th { color:var(--muted); font-weight:600; }
+  td.n { font-variant-numeric:tabular-nums; }
+  .fig { text-align:center; margin:24px 0; }
+  .fig img { max-width:100%; border-radius:12px; border:1px solid #21262d; }
+  .go { background:#161b22; border:1px solid #21262d; border-radius:14px; padding:26px; font-size:14px; }
+  .go pre { background:#0d1117; border:1px solid #21262d; border-radius:10px; padding:16px; overflow-x:auto; margin-top:12px; color:var(--cyan); font-size:13px; }
+  .links { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:36px 0 64px; }
+  .links a { color:var(--bg); background:var(--purple); text-decoration:none; padding:12px 22px; border-radius:10px; font-weight:600; font-size:15px; }
+  .links a.alt { background:#21262d; color:var(--fg); }
+  footer { text-align:center; color:var(--muted); font-size:13px; padding:32px 0 56px; }
+  @media (max-width:640px){ header h1 { font-size:38px; } .stat { min-width:130px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>MyriadBench</h1>
+    <p class="tag">One model. One session. All tasks.</p>
+    <p class="hook">In the far future, AI converges into one model — the single entry point to your digital life. MyriadBench is the first benchmark that measures what actually breaks there: how much of a model's ability survives an endless session of <em>countless interleaved tasks</em>.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n">0.00 → 0.93+</div><div class="l">interference tax (IC) as the day grows K=2 → K=16</div></div>
+    <div class="stat"><div class="n">2 models</div><div class="l">DeepSeek-V4-Flash &amp; MiMo-V2.5, 20 cells, 2 seeds</div></div>
+    <div class="stat"><div class="n">100%</div><div class="l">isolated-baseline anchoring — no memorizing your way up</div></div>
+  </div>
+
+  <section>
+    <h2><span class="dot">◆</span> The day gets heavier, the index collapses</h2>
+    <p style="color:var(--muted);margin-bottom:14px;">Myriad Index (MI, 0–100) by session size K and interleaving density D. Identical task sets across D — only the event stream differs.</p>
+    <table>
+      <tr><th>MI by K</th><th>K=2</th><th>K=4</th><th>K=8</th><th>K=16</th></tr>
+      <tr><td>DeepSeek-V4-Flash, D=0</td><td class="n">94.2</td><td class="n">33.4</td><td class="n">44.6</td><td class="n">25.9</td></tr>
+      <tr><td>DeepSeek-V4-Flash, D=0.6</td><td class="n">95.8</td><td class="n">34.6</td><td class="n">44.5</td><td class="n">25.7</td></tr>
+      <tr><td>MiMo-V2.5, D=0</td><td class="n">92.7</td><td class="n">80.2</td><td class="n">27.7</td><td class="n">38.6</td></tr>
+      <tr><td>MiMo-V2.5, D=0.6</td><td class="n">34.6</td><td class="n">77.2</td><td class="n">42.6</td><td class="n">27.3</td></tr>
+    </table>
+    <div class="fig"><img src="fig/mi_vs_k.png" alt="MI vs K: the index collapses as sessions grow"></div>
+  </section>
+
+  <section>
+    <h2><span class="dot">◆</span> Why it matters</h2>
+    <p style="color:var(--muted);">Every benchmark today measures one of two things: thousands of independent questions (MMLU, HLE) or one goal per session (SWE-bench, OSWorld). But once AI is everyone's single entry point, daily reality is <b style="color:var(--fg)">one agent's day</b> — coding, research, scheduling, email and data, interrupted, preempted, mutually dependent. Task-switching costs are proven (EMNLP-2024); never systematically measured. That gap is MyriadBench.</p>
+    <div class="fig"><img src="fig/how.png" alt="How it works: one agent, one event stream, the Myriad Index"></div>
+  </section>
+
+  <section>
+    <h2><span class="dot">◆</span> One index, four honest components</h2>
+    <table>
+      <tr><th>Component</th><th>Weight</th><th>Meaning</th></tr>
+      <tr><td>R — session retention</td><td>40%</td><td>mixed vs isolated performance kept (IC = 1−R)</td></tr>
+      <tr><td>S — state retention</td><td>30%</td><td>state-web consistency + resume fidelity</td></tr>
+      <tr><td>T — long-tail robustness</td><td>20%</td><td>hardest rarity tier retained</td></tr>
+      <tr><td>E — budget retention</td><td>10%</td><td>per-token output vs isolated baseline</td></tr>
+    </table>
+    <p style="color:var(--muted);margin-top:12px;font-size:14px;">Every component is anchored to the model's <b style="color:var(--fg)">own</b> isolated baselines. No memorizing, no gaming, no different models on different tasks — everyone runs the same official suite.</p>
+  </section>
+
+  <section>
+    <h2><span class="dot">◆</span> Try it</h2>
+    <div class="go">
+      Zero dependencies, Python 3.10+:
+      <pre>git clone https://github.com/shyringo/myriad-bench && cd myriad-bench
+python -m harness.cli generate --out data/generated --mix-id demo --seed 7 --K 8 --H 0.6 --D 0.5 --DEP 0.4 --IR 0.3 --NV 0.2
+python -m harness.cli run   --session data/generated/sessions/demo-s7.json --agent echo --out data/results
+python -m harness.cli report --session data/generated/sessions/demo-s7.json --trace data/results/demo-s7-echo.json --isolated data/results/isolated --out data/results</pre>
+      <p style="color:var(--muted);margin-top:10px;">No API key? The whole flow runs with <code>--agent echo</code>. Full pilot data (all traces, metrics, figures) ships with every release.</p>
+    </div>
+  </section>
+
+  <div class="links">
+    <a href="https://github.com/shyringo/myriad-bench">GitHub</a>
+    <a class="alt" href="https://github.com/shyringo/myriad-bench/releases">Pilot data &amp; releases</a>
+    <a class="alt" href="https://github.com/shyringo/myriad-bench/discussions">Discussions</a>
+  </div>
+
+  <footer>MyriadBench · One model. One session. All tasks. · MIT / CC BY 4.0</footer>
+</div>
+</body>
+</html>
