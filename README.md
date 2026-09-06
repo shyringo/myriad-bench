@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python 3.10+"></a> <a href="LICENSE"><img src="https://img.shields.io/badge/deps-none-green" alt="stdlib only"></a> <a href="#run-the-tests"><img src="https://img.shields.io/badge/tests-37%20passing-brightgreen" alt="tests"></a> <a href="https://github.com/shyringo/myriad-bench/actions/workflows/tests.yml"><img src="https://github.com/shyringo/myriad-bench/actions/workflows/tests.yml/badge.svg" alt="CI"></a> <a href="https://shyringo.github.io/myriad-bench/"><img src="https://img.shields.io/badge/landing-live-purple" alt="landing page"></a>
 </p>
-<p align="center"><b><a href="https://shyringo.github.io/myriad-bench/">🌐 Landing page — live pilot matrix &amp; results</a></b> · <a href="https://github.com/shyringo/myriad-bench/releases">Releases &amp; pilot data</a> · <a href="https://github.com/shyringo/myriad-bench/discussions">Discussions</a></p>
+<p align="center"><b><a href="https://github.com/shyringo/myriad-bench/blob/main/TECHNICAL_REPORT.md">📄 Technical Report v1.0</a></b> · <a href="https://shyringo.github.io/myriad-bench/">🌐 Landing page — live pilot matrix &amp; results</a> · <a href="https://github.com/shyringo/myriad-bench/releases">Releases &amp; pilot data</a> · <a href="https://github.com/shyringo/myriad-bench/discussions">Discussions</a></p>
 
 
 > **One model. One session. All tasks.**
